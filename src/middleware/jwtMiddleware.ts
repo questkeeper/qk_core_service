@@ -47,7 +47,7 @@ async function jwtMiddleware(
     // Check cache
     const cache = caches.default;
     const userKey = "user" as never;
-    const cachedUser = await getCachedResponse(c, cache, "users", userId); // Check if user is in cache already
+    const cachedUser = await getCachedResponse(cache, "users", userId); // Check if user is in cache already
 
     if (cachedUser) {
       c.set(userKey, cachedUser);
@@ -68,7 +68,7 @@ async function jwtMiddleware(
     }
 
     // Cache the user data
-    await cacheResponse(c, cache, "users", userId, data.user, CACHE_TTL);
+    await cacheResponse(cache, "users", userId, data.user, CACHE_TTL);
 
     // Add the user to the context
     c.set(userKey, data.user);
