@@ -1,7 +1,7 @@
 import {
   getTasks,
   getTask,
-  //   createTask,
+  createTask,
   //   toggleStar,
   //   toggleComplete,
   //   deleteTask,
@@ -39,7 +39,6 @@ async function getTasksHandler(c: Context) {
   const isCompleted = c.req.query("isCompleted") === "true"; // Parse query param
   const db = c.get("db");
   const userId = c.get("user").id;
-  const cache = caches.default;
 
   return await getTasks(isCompleted, userId, c, db);
 }
@@ -53,16 +52,21 @@ async function getTaskHandler(c: Context) {
   const id = c.req.param("id");
   const db = c.get("db");
   const userId = c.get("user").id;
-  const cache = caches.default;
 
   return await getTask(parseInt(id), userId, c, db);
 }
 
+const createTaskRoute = createRoute({
+  ...createTaskRouteBaseObject,
+  description: "Create a new task",
+});
 // Create a new task
-// tasksRoute.post("/", async (c) => {
-//   const taskData = await c.req.json();
-//   return await createTask(taskData);
-// });
+async function createTaskHandler(c: Context) {
+  const db = c.get("db");
+  const userId = c.get("user").id;
+  const taskData = await c.req.json();
+  return await createTask(taskData, userId, c, db);
+}
 
 // // Update a task
 // tasksRoute.put("/:id", async (c) => {
@@ -91,5 +95,6 @@ async function getTaskHandler(c: Context) {
 
 tasksRoute.openapi(getTasksRoute, getTasksHandler);
 tasksRoute.openapi(getTaskRoute, getTaskHandler);
+tasksRoute.openapi(createTaskRoute, createTaskHandler);
 
 export default tasksRoute;

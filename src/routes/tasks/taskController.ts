@@ -1,9 +1,14 @@
 import {
   selectTasksArraySchema,
   selectTaskSchema,
+  createTaskSchema,
   tasksTable,
 } from "@/models/tasksModel";
-import { cacheResponse, getCachedResponse } from "@/utils/cacheService";
+import {
+  cacheResponse,
+  deleteCachedResponse,
+  getCachedResponse,
+} from "@/utils/cacheService";
 import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Context } from "hono";
@@ -97,17 +102,27 @@ export const getTask = async (
   return c.json(task);
 };
 
-// export const createTask = async (task: any) => {
-//   const { error, data } = await supabase.from("tasks").insert([task]).select();
+export const createTask = async (
+  task: any,
+  userId: string,
+  c: Context,
+  db: NodePgDatabase<Record<string, never>>
+) => {
+  const parsedTask = createTaskSchema.parse({ ...task, userId });
+  const result = selectTaskSchema.parse(
+    (await db.insert(tasksTable).values(parsedTask).returning())[0]
+  );
 
-//   if (error) {
-//     return new Response(JSON.stringify({ message: error.message }), {
-//       status: 500,
-//     });
-//   }
+  if (!result) {
+    c.status(500);
+    return c.json({ message: "Task creation failed" });
+  }
 
-//   return new Response(JSON.stringify(data), { status: 201 });
-// };
+  const cache = caches.default;
+  await deleteCachedResponse(cache, `tasks-${false}`, userId);
+
+  return c.json(result);
+};
 
 // export const updateTask = async (id: number, task: any) => {
 //   const { data, error } = await supabase

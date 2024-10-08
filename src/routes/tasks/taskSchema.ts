@@ -1,3 +1,4 @@
+import { createTaskSchema, selectTaskSchema } from "@/models/tasksModel";
 import { z, createRoute } from "@hono/zod-openapi";
 
 const taskSchema = z.object({
@@ -47,14 +48,17 @@ export const createTaskRouteBaseObject: Parameters<typeof createRoute>[0] = {
     },
   ],
   method: "post",
-  path: "/tasks",
+  path: "/",
   tags: ["Tasks"],
   request: {
     body: {
       description: "Task creation parameters",
       content: {
         "application/json": {
-          schema: taskSchema,
+          schema: z.object({
+            ...createTaskSchema.shape,
+            userId: z.string().uuid().nullable(),
+          }),
         },
       },
     },
@@ -64,13 +68,7 @@ export const createTaskRouteBaseObject: Parameters<typeof createRoute>[0] = {
       description: "Task created successfully",
       content: {
         "application/json": {
-          schema: z.object({
-            id: z.number(),
-            ...taskSchema.shape,
-            createdAt: z.string(),
-            updatedAt: z.string(),
-            userId: z.string().uuid(),
-          }),
+          schema: selectTaskSchema,
         },
       },
     },

@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { categoriesTable } from "./categoriesModel";
 import { spacesTable } from "./spacesModel";
-import { createSelectSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "@hono/zod-openapi";
 
 export const tasksTable = pgTable("tasks", {
@@ -22,7 +22,7 @@ export const tasksTable = pgTable("tasks", {
     .defaultNow(),
   title: text("title").notNull(),
   description: text("description"),
-  dueDate: timestamp("dueDate", { withTimezone: true }),
+  dueDate: timestamp("dueDate", { withTimezone: true }).notNull(),
   userId: uuid("user_id").notNull(),
   completed: boolean("completed").notNull().default(false),
   starred: boolean("starred").notNull().default(false),
@@ -36,3 +36,13 @@ export const selectTaskSchema = createSelectSchema(tasksTable, {
 
 export const selectTasksArraySchema = z.array(selectTaskSchema);
 
+export const createTaskSchema = createInsertSchema(tasksTable, {
+  title: z.string(),
+  userId: z.string(),
+  dueDate: z.string().transform((v) => new Date(v)),
+  description: z.string().optional(),
+  categoryId: z.number().optional(),
+  spaceId: z.number().optional(),
+  completed: z.boolean().optional().default(false),
+  starred: z.boolean().optional().default(false),
+});
