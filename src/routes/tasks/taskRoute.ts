@@ -5,7 +5,7 @@ import {
   updateTask,
   toggleStar,
   toggleComplete,
-  //   deleteTask,
+  deleteTask,
 } from "@/routes/tasks/taskController";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
@@ -111,11 +111,13 @@ async function toggleStarHandler(c: Context) {
   return await toggleStar(parseInt(id), userId, c, db);
 }
 
-// // Delete a task
-// tasksRoute.delete("/:id", async (c) => {
-//   const id = c.req.param("id");
-//   return await deleteTask(parseInt(id));
-// });
+// Delete a task
+async function deleteTaskHandler(c: Context) {
+  const id = c.req.param("id");
+  const userId = (c.get("user" as never) as any).id;
+  const db = c.get("db" as never);
+  return await deleteTask(parseInt(id), userId, c, db);
+}
 
 tasksRoute.openapi(getTasksRoute, getTasksHandler);
 tasksRoute.openapi(getTaskRoute, getTaskHandler);

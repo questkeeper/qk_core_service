@@ -154,20 +154,26 @@ export const toggleComplete = async (
   db: NodePgDatabase<Record<string, never>>
 ) => await updateAsyncTask(id, userId, c, db, null, UpdateTaskType.Complete);
 
-// export const deleteTask = async (id: number) => {
-//   const { data, error } = await supabase.from("tasks").delete().eq("id", id);
+export const deleteTask = async (
+  id: number,
+  userId: string,
+  c: Context,
+  db: NodePgDatabase<Record<string, never>>
+) => {
+  try {
+    await db
+      .delete(tasksTable)
+      .where(and(eq(tasksTable.id, id), eq(tasksTable.userId, userId)));
 
-//   if (error) {
-//     return new Response(JSON.stringify({ message: error.message }), {
-//       status: 500,
-//     });
-//   }
+    const cache = caches.default;
+    await deleteCachedResponse(cache, `tasks-${false}`, userId);
+    await deleteCachedResponse(cache, `tasks-${true}`, userId);
 
-//   return new Response(
-//     JSON.stringify({ message: `Task deleted successfully` }),
-//     { status: 200 }
-//   );
-// };
+    return c.json({ message: "Task deleted successfully" });
+  } catch (e) {
+    return c.json({ message: "Task deletion failed" }, 500);
+  }
+};
 
 // Helper function to update the task
 export async function updateAsyncTask(
