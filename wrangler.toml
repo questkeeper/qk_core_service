@@ -1,9 +1,9 @@
-name = "qk_service_template"
+name = "qk_core_service"
 compatibility_date = "2024-08-22"
 node_compat = true
 
 routes = [
-    { pattern = "api.questkeeper.app/v1/template*", zone_name = "questkeeper.app" },
+    { pattern = "api.questkeeper.app/v1/core*", zone_name = "questkeeper.app" },
 ]
 
 [vars]

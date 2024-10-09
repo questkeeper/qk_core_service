@@ -2,7 +2,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 
 // Middleware Imports
-import apiKeyMiddleware from "@/middleware/apiKeyMiddleware";
 import corsMiddleware from "@/middleware/corsMiddleware";
 import { appendTrailingSlash } from "hono/trailing-slash";
 import initSupabaseMiddleware from "@/middleware/initSupabaseMiddleware";
@@ -12,15 +11,15 @@ import initDrizzleMiddleware from "./middleware/initDrizzleMiddleware";
 // Route Imports
 import ping from "@/routes/ping";
 import swaggerUIHandler, { docInfo } from "@/routes/docs";
-import { exampleRoute, exampleRouteHandler } from "@/routes/exampleRoute";
+import tasksRoute from "./routes/tasks/taskRoute";
 
 // You should edit these values to match your service
-const title = "QuestKeeper Template Microservice API";
-const basePath = "/v1/template"; // All routes will be prefixed with this path
+const title = "Core microservice that handles tasks, spaces, and categories";
+const basePath = "/v1/core"; // All routes will be prefixed with this path
 
 // Initialize the app and set some base routes
 const app: OpenAPIHono = new OpenAPIHono().basePath(basePath);
-app.get("/", (c) => c.text("Questkeeper Microservice template."));
+app.get("/", (c) => c.text(title));
 app.route("/ping", ping); // Used for testing if the service is up
 
 // Set up the swagger UI and documentation
@@ -42,10 +41,9 @@ app.doc("/doc", {
 const middleware: any = [
   corsMiddleware,
   appendTrailingSlash(),
-  apiKeyMiddleware,
   initSupabaseMiddleware, // Initialize Supabase
-  // jwtMiddleware, // Uncomment this line to enable JWT middleware, necessary for client-facing services. API-Key should be used for internal services.
-  initDrizzleMiddleware
+  jwtMiddleware,
+  initDrizzleMiddleware,
 ];
 middleware.forEach((m: any) => app.use(m));
 
@@ -67,6 +65,6 @@ middleware.forEach((m: any) => app.use(m));
  * Take a look at the example and ping routes for an example of how to define a route.
  *
  */
-app.openapi(exampleRoute, exampleRouteHandler); // Implements actual openapi standards... Should probably comment/delete this out.
+app.route("/tasks", tasksRoute);
 
 export default app;
