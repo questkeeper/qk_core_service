@@ -11,7 +11,6 @@ import initDrizzleMiddleware from "./middleware/initDrizzleMiddleware";
 // Route Imports
 import ping from "@/routes/ping";
 import swaggerUIHandler, { docInfo } from "@/routes/docs";
-import { exampleRoute, exampleRouteHandler } from "@/routes/exampleRoute";
 import tasksRoute from "./routes/tasks/taskRoute";
 
 // You should edit these values to match your service
@@ -44,7 +43,7 @@ const middleware: any = [
   appendTrailingSlash(),
   initSupabaseMiddleware, // Initialize Supabase
   jwtMiddleware,
-  initDrizzleMiddleware
+  initDrizzleMiddleware,
 ];
 middleware.forEach((m: any) => app.use(m));
 
@@ -66,7 +65,6 @@ middleware.forEach((m: any) => app.use(m));
  * Take a look at the example and ping routes for an example of how to define a route.
  *
  */
-app.openapi(exampleRoute, exampleRouteHandler); // Implements actual openapi standards... Should probably comment/delete this out.
 app.route("/tasks", tasksRoute);
 
 export default app;
