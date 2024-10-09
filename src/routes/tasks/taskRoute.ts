@@ -2,10 +2,10 @@ import {
   getTasks,
   getTask,
   createTask,
-  //   toggleStar,
-  //   toggleComplete,
+  updateTask,
+  toggleStar,
+  toggleComplete,
   //   deleteTask,
-  //   updateTask,
 } from "@/routes/tasks/taskController";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
@@ -68,24 +68,41 @@ async function createTaskHandler(c: Context) {
   return await createTask(taskData, userId, c, db);
 }
 
-// // Update a task
-// tasksRoute.put("/:id", async (c) => {
-//   const id = c.req.param("id");
-//   const taskData = await c.req.json();
-//   return await updateTask(parseInt(id), taskData);
-// });
+const updateTaskRoute = createRoute({
+  ...updateTaskRouteBaseObject("/:id", "put"),
+  description: "Update a task by ID",
+});
+// Update a task
+async function updateTaskHandler(c: Context) {
+  const id = c.req.param("id");
+  const taskData = await c.req.json();
+  const userId = c.get("user").id;
+  return await updateTask(parseInt(id), userId, taskData, c, c.get("db"));
+}
 
-// // Toggle task completion status
-// tasksRoute.put("/:id/toggleComplete", async (c) => {
-//   const id = c.req.param("id");
-//   return await toggleComplete(parseInt(id));
-// });
+const toggleCompleteRoute = createRoute({
+  ...updateTaskRouteBaseObject("/:id/toggleComplete", "patch"),
+  description: "Toggle task completion status",
+});
+// Toggle task completion status
+async function toggleCompleteHandler(c: Context) {
+  const id = c.req.param("id");
+  const userId = c.get("user").id;
+  const db = c.get("db");
+  return await toggleComplete(parseInt(id), userId, c, db);
+}
 
-// // Toggle task starred status
-// tasksRoute.put("/:id/toggleStar", async (c) => {
-//   const id = c.req.param("id");
-//   return await toggleStar(parseInt(id));
-// });
+const toggleStarRoute = createRoute({
+  ...updateTaskRouteBaseObject("/:id/toggleStar", "patch"),
+  description: "Toggle task starred status",
+});
+// Toggle task starred status
+async function toggleStarHandler(c: Context) {
+  const id = c.req.param("id");
+  const userId = (c.get("user" as never) as any).id;
+  const db = c.get("db" as never);
+  return await toggleStar(parseInt(id), userId, c, db);
+}
 
 // // Delete a task
 // tasksRoute.delete("/:id", async (c) => {
@@ -96,5 +113,8 @@ async function createTaskHandler(c: Context) {
 tasksRoute.openapi(getTasksRoute, getTasksHandler);
 tasksRoute.openapi(getTaskRoute, getTaskHandler);
 tasksRoute.openapi(createTaskRoute, createTaskHandler);
+tasksRoute.openapi(updateTaskRoute, updateTaskHandler);
+tasksRoute.openapi(toggleCompleteRoute, toggleCompleteHandler);
+tasksRoute.openapi(toggleStarRoute, toggleStarHandler);
 
 export default tasksRoute;

@@ -108,7 +108,13 @@ export const createTask = async (
   c: Context,
   db: NodePgDatabase<Record<string, never>>
 ) => {
-  const parsedTask = createTaskSchema.parse({ ...task, userId });
+  const currentUtcDate = new Date(new Date().toUTCString());
+  const parsedTask = createTaskSchema.parse({
+    ...task,
+    userId,
+    createdAt: currentUtcDate,
+    updatedAt: currentUtcDate,
+  });
   const result = selectTaskSchema.parse(
     (await db.insert(tasksTable).values(parsedTask).returning())[0]
   );
@@ -124,56 +130,29 @@ export const createTask = async (
   return c.json(result);
 };
 
-// export const updateTask = async (id: number, task: any) => {
-//   const { data, error } = await supabase
-//     .from("tasks")
-//     .update(task)
-//     .eq("id", id);
+export const updateTask = async (
+  id: number,
+  userId: string,
+  task: any,
+  c: Context,
+  db: NodePgDatabase<Record<string, never>>
+) => {
+  return await updateAsyncTask(id, userId, c, db, task);
+};
 
-//   if (error) {
-//     return new Response(JSON.stringify({ message: error.message }), {
-//       status: 500,
-//     });
-//   }
+export const toggleStar = async (
+  id: number,
+  userId: string,
+  c: Context,
+  db: NodePgDatabase<Record<string, never>>
+) => await updateAsyncTask(id, userId, c, db, null, UpdateTaskType.Star);
 
-//   return new Response(JSON.stringify(data), { status: 200 });
-// };
-
-// export const toggleStar = async (id: number) => {
-//   const { data, error } = await supabase
-//     .from("tasks")
-//     .update({ starred: true }) // Assuming this toggles star
-//     .eq("id", id);
-
-//   if (error) {
-//     return new Response(JSON.stringify({ message: error.message }), {
-//       status: 500,
-//     });
-//   }
-
-//   return new Response(
-//     JSON.stringify({ message: "Task starred successfully" }),
-//     { status: 200 }
-//   );
-// };
-
-// export const toggleComplete = async (id: number) => {
-//   const { data, error } = await supabase
-//     .from("tasks")
-//     .update({ completed: true }) // Assuming this toggles completion
-//     .eq("id", id);
-
-//   if (error) {
-//     return new Response(JSON.stringify({ message: error.message }), {
-//       status: 500,
-//     });
-//   }
-
-//   return new Response(
-//     JSON.stringify({ message: "Task completed successfully" }),
-//     { status: 200 }
-//   );
-// };
+export const toggleComplete = async (
+  id: number,
+  userId: string,
+  c: Context,
+  db: NodePgDatabase<Record<string, never>>
+) => await updateAsyncTask(id, userId, c, db, null, UpdateTaskType.Complete);
 
 // export const deleteTask = async (id: number) => {
 //   const { data, error } = await supabase.from("tasks").delete().eq("id", id);
@@ -189,3 +168,57 @@ export const createTask = async (
 //     { status: 200 }
 //   );
 // };
+
+// Helper function to update the task
+export async function updateAsyncTask(
+  id: number,
+  userId: string,
+  c: Context,
+  db: NodePgDatabase<Record<string, never>>,
+  task?: any,
+  type?: UpdateTaskType
+) {
+  if (!task) {
+    task = await db
+      .select()
+      .from(tasksTable)
+      .where(and(eq(tasksTable.id, id), eq(tasksTable.userId, userId)));
+
+    if (task.length === 0) {
+      c.status(404);
+      return c.json({ message: "Task not found" });
+    }
+
+    task = task[0];
+  } else {
+    task = createTaskSchema.parse(task);
+  }
+
+  if (type === UpdateTaskType.Complete) {
+    task.completed = !task.completed;
+  } else if (type === UpdateTaskType.Star) {
+    task.starred = !task.starred;
+  }
+
+  const updatedTask = await db
+    .update(tasksTable)
+    .set({ ...task, updatedAt: new Date(new Date().toUTCString()) })
+    .where(and(eq(tasksTable.id, id), eq(tasksTable.userId, userId)))
+    .returning();
+
+  if (!updatedTask) {
+    c.status(500);
+    return c.json({ message: "Task update failed" });
+  }
+
+  const cache = caches.default;
+  await deleteCachedResponse(cache, `tasks-${false}`, userId);
+  await deleteCachedResponse(cache, `tasks-${true}`, userId);
+
+  return c.json(updatedTask, 200);
+}
+
+enum UpdateTaskType {
+  Complete,
+  Star,
+}

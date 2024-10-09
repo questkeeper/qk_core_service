@@ -78,8 +78,8 @@ export const createTaskRouteBaseObject: Parameters<typeof createRoute>[0] = {
 
 // Take in a method as a string and return a route object
 export const updateTaskRouteBaseObject = (
-  method: "patch" | "put",
-  routePath: string
+  routePath: string,
+  method: "patch" | "put"
 ): Parameters<typeof createRoute>[0] => ({
   security: [{ Authorization: [] }],
   parameters: [
@@ -108,7 +108,10 @@ export const updateTaskRouteBaseObject = (
       description: "Task update parameters",
       content: {
         "application/json": {
-          schema: taskSchema.partial(),
+          schema: z.object({
+            ...createTaskSchema.shape,
+            userId: z.string().uuid().nullable(),
+          }),
         },
       },
     },
