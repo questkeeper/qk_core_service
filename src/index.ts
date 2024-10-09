@@ -19,7 +19,7 @@ const basePath = "/v1/core"; // All routes will be prefixed with this path
 
 // Initialize the app and set some base routes
 const app: OpenAPIHono = new OpenAPIHono().basePath(basePath);
-app.get("/", (c) => c.text("Questkeeper Microservice template."));
+app.get("/", (c) => c.text(title));
 app.route("/ping", ping); // Used for testing if the service is up
 
 // Set up the swagger UI and documentation

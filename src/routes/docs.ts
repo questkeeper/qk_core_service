@@ -11,7 +11,7 @@ async function swaggerUIHandler(
   if (contextEnv.ENVIRONMENT == null || contextEnv.ENVIRONMENT !== "dev") {
     return c.text("Forbidden", 403);
   }
-  return swaggerUI({ url: "/v1/template/doc" })(c, next) as any;
+  return swaggerUI({ url: "/v1/core/doc" })(c, next) as any;
 }
 
 export default swaggerUIHandler;
