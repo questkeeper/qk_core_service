@@ -13,7 +13,7 @@ import {
   getTaskRouteBaseObject,
   updateTaskRouteBaseObject,
 } from "@/routes/tasks/taskSchema";
-import { selectTaskSchema } from "@/models/tasksModel";
+import { createTaskSchema, selectTaskSchema } from "@/models/tasksModel";
 import { Context } from "hono";
 
 const tasksRoute = new OpenAPIHono();
@@ -69,7 +69,14 @@ async function createTaskHandler(c: Context) {
 }
 
 const updateTaskRoute = createRoute({
-  ...updateTaskRouteBaseObject("/:id", "put"),
+  ...updateTaskRouteBaseObject("/:id", "put", {
+    "application/json": {
+      schema: z.object({
+        ...createTaskSchema.shape,
+        userId: z.string().uuid().nullable(),
+      }),
+    },
+  }),
   description: "Update a task by ID",
 });
 // Update a task
@@ -81,7 +88,7 @@ async function updateTaskHandler(c: Context) {
 }
 
 const toggleCompleteRoute = createRoute({
-  ...updateTaskRouteBaseObject("/:id/toggleComplete", "patch"),
+  ...updateTaskRouteBaseObject("/:id/toggleComplete", "patch", null),
   description: "Toggle task completion status",
 });
 // Toggle task completion status
@@ -93,7 +100,7 @@ async function toggleCompleteHandler(c: Context) {
 }
 
 const toggleStarRoute = createRoute({
-  ...updateTaskRouteBaseObject("/:id/toggleStar", "patch"),
+  ...updateTaskRouteBaseObject("/:id/toggleStar", "patch", null),
   description: "Toggle task starred status",
 });
 // Toggle task starred status
