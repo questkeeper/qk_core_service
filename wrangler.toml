@@ -6,6 +6,11 @@ routes = [
     { pattern = "api.questkeeper.app/v1/core*", zone_name = "questkeeper.app" },
 ]
 
+# Add a binding to call other worker
+services = [
+  { binding = "TASK_COMPLETE_SERVICE", service = "qk_social_service" }
+]
+
 [vars]
 SUPABASE_URL = "https://mzudaknbrzixjkvjqayw.supabase.co"
 
