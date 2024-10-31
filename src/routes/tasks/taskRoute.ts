@@ -15,8 +15,7 @@ import {
 } from "@/routes/tasks/taskSchema";
 import { createTaskSchema, selectTaskSchema } from "@/models/tasksModel";
 import { Context } from "hono";
-
-const tasksRoute = new OpenAPIHono();
+import { Bindings } from "@/utils/types";
 
 const getTasksRoute = createRoute({
   ...getTaskRouteBaseObject(
@@ -119,11 +118,11 @@ async function deleteTaskHandler(c: Context) {
   return await deleteTask(parseInt(id), userId, c, db);
 }
 
-tasksRoute.openapi(getTasksRoute, getTasksHandler);
-tasksRoute.openapi(getTaskRoute, getTaskHandler);
-tasksRoute.openapi(createTaskRoute, createTaskHandler);
-tasksRoute.openapi(updateTaskRoute, updateTaskHandler);
-tasksRoute.openapi(toggleCompleteRoute, toggleCompleteHandler);
-tasksRoute.openapi(toggleStarRoute, toggleStarHandler);
-
-export default tasksRoute;
+export default new OpenAPIHono<{ Bindings: Bindings }>()
+  .get("/", getTasksHandler)
+  .get("/:id", getTaskHandler)
+  .post("/", createTaskHandler)
+  .put("/:id", updateTaskHandler)
+  .patch("/:id/toggleComplete", toggleCompleteHandler)
+  .patch("/:id/toggleStar", toggleStarHandler)
+  .delete("/:id", deleteTaskHandler);
