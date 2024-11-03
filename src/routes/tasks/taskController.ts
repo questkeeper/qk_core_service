@@ -1,3 +1,4 @@
+import { AppType } from "@/index";
 import {
   selectTasksArraySchema,
   selectTaskSchema,
@@ -12,6 +13,7 @@ import {
 import { and, eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Context } from "hono";
+import { hc } from "hono/client";
 
 export async function getTasks(
   isCompleted: boolean,
@@ -215,6 +217,25 @@ export async function updateAsyncTask(
   if (!updatedTask) {
     c.status(500);
     return c.json({ message: "Task update failed" });
+  }
+
+  if (type === UpdateTaskType.Complete) {
+    const apiClient = hc<AppType>(new URL("/", c.req.url).toString(), {
+      fetch: c.env.TASK_COMPLETE_SERVICE.fetch.bind(
+        c.env.TASK_COMPLETE_SERVICE
+      ),
+      headers: {
+        Authorization: c.req.header("Authorization") as string,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // @ts-expect-error
+    const pointsReponse = await apiClient.v1.social.points.$post({
+      json: {
+        task: updatedTask[0],
+      },
+    });
   }
 
   const cache = caches.default;
