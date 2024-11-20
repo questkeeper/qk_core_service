@@ -1,7 +1,7 @@
 {
   "name": "qk_service_template",
   "scripts": {
-    "dev": "wrangler dev src/index.ts --env dev --port 8787",
+    "dev": "wrangler dev src/index.ts --env dev --port 8788",
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
