@@ -1,15 +1,19 @@
 name = "qk_core_service"
-compatibility_date = "2024-08-22"
-node_compat = true
+main = "src/index.ts"
 
-routes = [
-    { pattern = "api.questkeeper.app/v1/core*", zone_name = "questkeeper.app" },
-]
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2024-09-23"
 
-# Add a binding to call other worker
-services = [
-  { binding = "TASK_COMPLETE_SERVICE", service = "qk_social_service" }
-]
+[dev]
+port = 8788
+
+[[routes]]
+pattern = "api.questkeeper.app/v1/core*"
+zone_name = "questkeeper.app"
+
+[[services]]
+binding = "TASK_COMPLETE_SERVICE"
+service = "qk_social_service"
 
 [vars]
 SUPABASE_URL = "https://mzudaknbrzixjkvjqayw.supabase.co"
@@ -17,5 +21,6 @@ SUPABASE_URL = "https://mzudaknbrzixjkvjqayw.supabase.co"
 [placement]
 mode = "off"
 
-[env.dev]
-vars = { ENVIRONMENT = "dev", SUPABASE_URL = "https://mzudaknbrzixjkvjqayw.supabase.co" }
+[env.dev.vars]
+ENVIRONMENT = "dev"
+SUPABASE_URL = "https://mzudaknbrzixjkvjqayw.supabase.co"
