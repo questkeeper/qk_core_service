@@ -8,12 +8,14 @@ import {
 } from "./spaceSchema";
 import {
   getSpaces,
-  getSpace,
   createSpace,
   updateSpace,
   deleteSpace,
 } from "./spaceController";
-import { selectSpaceSchema, selectSpacesArraySchema } from "@/models/spacesModel";
+import {
+  selectSpaceSchema,
+  selectSpacesArraySchema,
+} from "@/models/spacesModel";
 
 const getSpacesRoute = createRoute({
   ...getSpaceRouteBaseObject("/", [], selectSpacesArraySchema),
@@ -30,13 +32,6 @@ const getSpaceRoute = createRoute({
   ...getSpaceRouteBaseObject("/:id", [], selectSpaceSchema),
   description: "Get a single space by ID",
 });
-
-async function getSpaceHandler(c: Context) {
-  const id = c.req.param("id");
-  const db = c.get("db");
-  const userId = c.get("user").id;
-  return await getSpace(parseInt(id), userId, c, db);
-}
 
 const createSpaceRoute = createRoute({
   ...createSpaceRouteBaseObject,
@@ -75,7 +70,6 @@ async function deleteSpaceHandler(c: Context) {
 
 export default new OpenAPIHono<{ Bindings: Bindings }>()
   .get("/", getSpacesHandler)
-  .get("/:id", getSpaceHandler)
   .post("/", createSpaceHandler)
   .put("/:id", updateSpaceHandler)
-  .delete("/:id", deleteSpaceHandler); 
+  .delete("/:id", deleteSpaceHandler);
