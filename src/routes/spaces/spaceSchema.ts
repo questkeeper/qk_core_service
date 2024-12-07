@@ -1,9 +1,9 @@
-import { selectSpaceSchema } from "@/models/spacesModel";
+import { selectSpaceSchema, SpaceType } from "@/models/spacesModel";
 import { z, createRoute } from "@hono/zod-openapi";
 
 const spaceSchema = z.object({
   title: z.string(),
-  color: z.string().optional(),
+  spaceType: z.nativeEnum(SpaceType),
 });
 
 // Base response codes
@@ -165,4 +165,4 @@ export const getSpaceRouteBaseObject = (
     },
     ...responseCodes,
   },
-}); 
+});
