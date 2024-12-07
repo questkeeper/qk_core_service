@@ -15,7 +15,6 @@ export const spacesTable = pgTable("spaces", {
     .defaultNow(),
   title: text("title").notNull(),
   spaceType: text("spaceType").notNull().default(SpaceType.LIVING_ROOM),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }),
   userId: uuid("user_id").notNull(),
 });
 

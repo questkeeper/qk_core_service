@@ -1,6 +1,9 @@
 import { Context } from "hono";
-import { eq, and } from "drizzle-orm";
-import { selectSpacesArraySchema, spacesTable } from "@/models/spacesModel";
+import { eq, and, desc } from "drizzle-orm";
+import {
+  selectSpacesArraySchema,
+  spacesTable,
+} from "@/models/spacesModel";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   getCachedResponse,
@@ -24,7 +27,11 @@ export async function getSpaces(userId: string, c: Context, db: DrizzleClient) {
   }
 
   const spaces = selectSpacesArraySchema.parse(
-    await db.select().from(spacesTable).where(eq(spacesTable.userId, userId))
+    await db
+      .select()
+      .from(spacesTable)
+      .where(eq(spacesTable.userId, userId))
+      .orderBy(desc(spacesTable.createdAt))
   );
 
   // Cache the result
@@ -51,7 +58,6 @@ export async function createSpace(
       ...spaceData,
       userId,
       createdAt: new Date(),
-      updatedAt: new Date(),
     })
     .returning();
 
@@ -68,14 +74,15 @@ export async function updateSpace(
   c: Context,
   db: DrizzleClient
 ) {
-  const updatedSpace = await db
-    .update(spacesTable)
-    .set({
-      ...spaceData,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(spacesTable.id, id), eq(spacesTable.userId, userId)))
-    .returning();
+  const updatedSpace = selectSpacesArraySchema.parse(
+    await db
+      .update(spacesTable)
+      .set({
+        ...spaceData,
+      })
+      .where(and(eq(spacesTable.id, id), eq(spacesTable.userId, userId)))
+      .returning()
+  );
 
   if (!updatedSpace || updatedSpace.length === 0) {
     return c.json({ error: "Space not found" }, 404);
