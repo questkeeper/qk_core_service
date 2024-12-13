@@ -11,6 +11,8 @@ import initDrizzleMiddleware from "./middleware/initDrizzleMiddleware";
 // Route Imports
 import ping from "@/routes/ping";
 import tasksRoute from "./routes/tasks/taskRoute";
+import spacesRoute from "./routes/spaces/spaceRoute";
+import categoriesRoute from "./routes/categories/categoryRoute";
 import { Bindings } from "./utils/types";
 
 // You should edit these values to match your service
@@ -29,7 +31,9 @@ const app = new OpenAPIHono<{ Bindings: Bindings }>()
     jwtMiddleware,
     initDrizzleMiddleware
   )
-  .route("/tasks", tasksRoute);
+  .route("/tasks", tasksRoute)
+  .route("/spaces", spacesRoute)
+  .route("/categories", categoriesRoute);
 
 export default app;
 export type AppType = typeof app;
