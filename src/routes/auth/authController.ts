@@ -10,15 +10,6 @@ export async function deleteAccount(c: Context) {
   }
 
   try {
-    // Delete user's data from Supabase Auth
-    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
-      user.id
-    );
-    if (deleteAuthError) {
-      console.log("error: ", deleteAuthError);
-      return c.json({ error: "Failed to delete user account" }, 500);
-    }
-
     // Delete user's data from public_user_profiles
     const { error: deleteProfileError } = await supabase
       .from("public_user_profiles")
@@ -27,6 +18,19 @@ export async function deleteAccount(c: Context) {
 
     if (deleteProfileError) {
       return c.json({ error: "Failed to delete user profile" }, 500);
+    }
+  } catch {
+    return c.json({ error: "Failed to delete profile" }, 500);
+  }
+
+  try {
+    // Delete user's data from Supabase Auth
+    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
+      user.id
+    );
+    if (deleteAuthError) {
+      console.log("error: ", deleteAuthError);
+      return c.json({ error: "Failed to delete user account" }, 500);
     }
 
     return c.json({ success: true }, 200);
